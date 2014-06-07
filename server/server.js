@@ -39,6 +39,7 @@ server.on( "request",
 				var task = childprocess.exec( 
 					"git clone https://volkovasystems:Enigmata123@github.com/" + projectNamespace + ".git && " +
 					"cd " + projectNamespace.split( "/" )[ 1 ] + " && " +
+					"pwd && "+
 					"git push origin origin:refs/heads/develop && " +
 					"git push origin origin:refs/heads/feature/" + featureNamespace + " && " +
 					"git push origin origin:refs/heads/feature/test" + featureNamespace );
