@@ -129,6 +129,8 @@ void drawOnProjectFound( ){
       }else{
         renderCurrentCommand( );
       }
+      if( checkMode( COMMAND_ENTERED ) ){
+      }
   }
 }
 
@@ -184,6 +186,7 @@ void createCommandInputPrompt( ){
   popMatrix( );
 }
 
+String slicedCurrentCommand = "";
 void renderCurrentCommand( ){
   pushMatrix( );
   
@@ -198,8 +201,9 @@ void renderCurrentCommand( ){
   int y = height - 10;
   if( currentCommandWidth < boundaryWidth ){
     text( currentCommand, x, y );
+    slicedCurrentCommand = currentCommand.substring( 0, currentCommand.length( ) );
   }else{
-    //text( projectName, x, y );
+    text( slicedCurrentCommand, x, y );
   }
   
   popMatrix( );
@@ -328,6 +332,7 @@ void createProjectInputPrompt( ){
   popMatrix( );
 }
 
+String slicedProjectName = "";
 void renderProjectName( ){
   pushMatrix( );
   
@@ -343,10 +348,10 @@ void renderProjectName( ){
   int y = baseTopDistance + 20;  
   if( projectNameWidth < boundaryWidth ){
     text( projectName, x, y );
+    slicedProjectName = projectName.substring( 0, projectName.length( ) );
   }else{
-    //text( projectName, x, y );
+    text( slicedProjectName, x, y );
   }
-  
   
   popMatrix( );
 }
