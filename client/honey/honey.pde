@@ -107,6 +107,13 @@ void keyPressed( ){
 */
 void drawOnFeatureAdded( ){
   if( checkMode( FEATURE_ADDED ) ){
+    createFeaturePane( );
+    createFeatureIcon( );
+    createFeatureTitle( );
+    renderCurrentFeatureTitle( );
+    createFeautureDescriptionTitle( );
+    renderCurrentFeatureDescription( );
+    createFeatureChecklistTitle( );
     
   }
 }
@@ -114,11 +121,91 @@ void drawOnFeatureAdded( ){
 void createFeaturePane( ){
   pushMatrix( );
   
-  stroke( 0, 255, 26 );
-  fill( 139, 255, 61 );
-  rect( 0, 0, width - 1, 100 );
+  stroke( 194, 194, 194 );
+  fill( 224, 224, 224 );
+  rect( 0, 101, width - 1, 200 );
   
   popMatrix( );
+}
+
+void createFeatureIcon( ){
+  pushMatrix( );
+  
+  int x = 20;
+  int y = 101 + 20; 
+  stroke( 0 );
+  image( featureIcon, x, y );
+  //rect( x, y, 32, 32 );
+  
+  popMatrix( );
+}
+
+void createFeatureTitle( ){
+  pushMatrix( );
+  
+  PFont featureTitleFont = createFont( "Verdana", 15, true );
+  fill( 0 );
+  textFont( featureTitleFont );
+  int x = 20 + 32 + 10;
+  int y = 101 + 43;
+  text( "Feature:", x, y );
+  
+  popMatrix( );
+}
+
+void renderCurrentFeatureTitle( ){
+  pushMatrix( );
+  
+  PFont featureFont = createFont( "Verdana", 25, true );
+  fill( 0 );
+  textFont( featureFont );
+  int x = 20 + 32 + 10 + 70;
+  int y = 101 + 45;
+  text( currentFeature, x, y );
+  
+  popMatrix( );
+}
+
+void createFeautureDescriptionTitle( ){
+  pushMatrix( );
+  
+  PFont featureDescriptionTitleFont = createFont( "Verdana", 15, true );
+  fill( 0 );
+  textFont( featureDescriptionTitleFont );
+  int x = 20 + 5;
+  int y = 101 + 40 + 45;
+  text( "Description:", x, y );
+  
+  popMatrix( );
+}
+
+void renderCurrentFeatureDescription( ){
+  pushMatrix( );
+  
+  PFont featureDescriptionFont = createFont( "Verdana", 25, true );
+  fill( 0 );
+  textFont( featureDescriptionFont );
+  int x = 20 + 5 + 100;
+  int y = 101 + 40 + 45 + 2;
+  text( currentFeatureDescription, x, y );
+  
+  popMatrix( );
+}
+
+void createFeatureChecklistTitle( ){
+  pushMatrix( );
+  
+  PFont featureChecklistTitleFont = createFont( "Verdana", 15, true );
+  fill( 0 );
+  textFont( featureChecklistTitleFont );
+  int x = 20 + 5;
+  int y = 101 + 40 + 45 + 45;
+  text( "Checklist:", x, y );
+  
+  popMatrix( );
+}
+
+void renderCurrentFeatureChecklist( ){
 }
 /*
 ================================================================================================================
@@ -160,9 +247,9 @@ void drawOnProjectFound( ){
         renderCurrentCommand( );
       }
       if( checkMode( COMMAND_ENTERED ) ){
+        removeMode( COMMAND_ENTERED );
         if( parse( ) ){
           addMode( COMMAND_EMPTY );
-          removeMode( COMMAND_ENTERED );
           currentCommand = "";
         }
       }
@@ -251,8 +338,8 @@ void renderCurrentCommand( ){
 ================================================================================================================
 */
 //APP PARSER
-String currentFeatureTitle = "";
-String currentFeatureDescriptionTitle = "";
+String currentFeature = "";
+String currentFeatureDescription = "";
 LinkedList<String> currentFeatureChecklist = new LinkedList<String>( );
 boolean parse( ){
    String addFeaturePattern = "^[Aa]dd\\s+[Ff]eature\\s+([-\\s\\w]+)";
@@ -264,9 +351,10 @@ boolean parse( ){
      if( !checkMode( FEATURE_TITLE_ENTERED ) ){
        Matcher matcher = Pattern.compile( addFeaturePattern ).matcher( currentCommand );
        if( matcher.matches( ) ){
-         currentFeatureTitle = matcher.group( 1 );
+         currentFeature = matcher.group( 1 );
        }
        addMode( FEATURE_TITLE_ENTERED );
+       addMode( FEATURE_ADDED );
        return true;
      }else{
        //TODO: Prompt here.
@@ -277,7 +365,7 @@ boolean parse( ){
      if( checkMode( FEATURE_TITLE_ENTERED ) ){
        Matcher matcher = Pattern.compile( setFeatureTitlePattern ).matcher( currentCommand );
        if( matcher.matches( ) ){
-         currentFeatureTitle = matcher.group( 1 );
+         currentFeature = matcher.group( 1 );
        }
        return true;
      }else{
@@ -289,7 +377,7 @@ boolean parse( ){
      if( checkMode( FEATURE_TITLE_ENTERED ) ){
        Matcher matcher = Pattern.compile( setFeatureDescriptionPattern ).matcher( currentCommand );
        if( matcher.matches( ) ){
-         currentFeatureDescriptionTitle = matcher.group( 1 );
+         currentFeatureDescription = matcher.group( 1 );
        }
        addMode( FEATURE_DESCRIPTION_ENTERED );
        return true;
