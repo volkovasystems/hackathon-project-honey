@@ -11,7 +11,13 @@ final String TYPING_PROJECT_NAME = "typing-project-name";
 final String PROJECT_NAME_EMPTY = "project-name-empty";
 final String PROJECT_NAME_ENTERED = "project-name-entered";
 final String PROJECT_SELECTION_IDLE = "project-selection-idle";
+
 final String PROJECT_FOUND = "project-found";
+final String PROJECT_CLOSE = "project-close";
+
+final String TYPING_COMMAND = "typing-command";
+final String COMMAND_EMPTY = "command-empty";
+final String COMMAND_ENTERED = "command-entered";
 /*
 ================================================================================================================
 */
@@ -42,16 +48,12 @@ boolean checkMode( String mode ){
 */
 PImage searchIcon;
 PImage projectIcon;
-PImage closeIcon;
-PImage addIcon;
-PImage doneIcon;
 PImage taskIcon;
+PImage featureIcon;
 void loadImages( ){
   searchIcon = loadImage( "search.png" );
   projectIcon = loadImage( "project.png" );
-  closeIcon = loadImage( "close.png" );
-  addIcon = loadImage( "add.png" );
-  doneIcon = loadImage( "done.png" );
+  featureIcon = loadImage( "feature.png" );
   taskIcon = loadImage( "task.png" );
 }
 /*
@@ -73,6 +75,7 @@ void setup( ){
 
 void draw( ){
   background( 255 );
+  createHeaderSection( );
   drawOnProjectSelectionMode( );
   drawOnProjectFound( );
 }
@@ -85,6 +88,7 @@ void draw( ){
 */
 void keyPressed( ){
   keyPressedOnProjectSelectionMode( );
+  keyPressedOnProjectFoundMode( );
 }
 /*
 ================================================================================================================
@@ -93,10 +97,112 @@ void keyPressed( ){
 /*
 ================================================================================================================
 */
+String currentCommand = "";
+void keyPressedOnProjectFoundMode( ){
+  if( checkMode( PROJECT_FOUND ) ){
+    if( keyCode == BACKSPACE ){
+      if( !checkMode( COMMAND_EMPTY ) ){
+        currentCommand = currentCommand.substring( 0, currentCommand.length( ) - 1 );
+      }
+    }else if( keyCode == ENTER ){
+      removeMode( TYPING_COMMAND );
+      addMode( COMMAND_ENTERED );
+    }else{
+      addMode( TYPING_COMMAND );
+      currentCommand += key;
+    }
+    if( currentCommand.length( ) == 0 ){
+      addMode( COMMAND_EMPTY );
+    }else{
+      removeMode( COMMAND_EMPTY );
+    }
+  }
+}
+
 void drawOnProjectFound( ){
   if( checkMode( PROJECT_FOUND ) ){
-    
+      createProjectIcon( );
+      renderProjectNameAsTitle( );
+      createCommandInputPane( );
+      if( checkMode( COMMAND_EMPTY ) ){
+        createCommandInputPrompt( );
+      }else{
+        renderCurrentCommand( );
+      }
   }
+}
+
+void renderProjectNameAsTitle( ){
+  pushMatrix( );
+  
+  PFont projectNameFont = createFont( "Verdana", 30, true );
+  fill( 0 );
+  textFont( projectNameFont );
+  int x = baseLeftDistance + 40;
+  int y = baseTopDistance + 23;
+  text( projectName, x, y );
+  
+  popMatrix( );
+}
+
+void createProjectIcon( ){
+  pushMatrix( );
+  
+  int x = baseLeftDistance;
+  int y = baseTopDistance - 3; 
+  stroke( 0 );
+  image( projectIcon, x, y );
+  rect( x, y, 32, 32 );
+  
+  popMatrix( );
+}
+
+void createCommandInputPane( ){
+  pushMatrix( );
+  
+  stroke( 0 );
+  fill( 255 );
+  int x = 0;
+  int y = height - 35;
+  int w = width - 1;
+  int h = 35;
+  rect( x, y, w, h );
+  
+  popMatrix( );
+}
+
+void createCommandInputPrompt( ){
+  pushMatrix( );
+  
+  PFont commandInputPromptFont = createFont( "Consolas", 20, true );
+  fill( 123 );
+  textFont( commandInputPromptFont );
+  int x = 5;
+  int y = height - 10;
+  text( "Start typing your commands.", x, y );
+  
+  popMatrix( );
+}
+
+void renderCurrentCommand( ){
+  pushMatrix( );
+  
+  PFont currentCommandFont = createFont( "Consolas", 20, true );
+  fill( 0 );
+  textFont( currentCommandFont );
+  
+  int currentCommandWidth = (int)textWidth( currentCommand );
+  int boundaryWidth = width - 20;
+  
+  int x = 5;
+  int y = height - 10;
+  if( currentCommandWidth < boundaryWidth ){
+    text( currentCommand, x, y );
+  }else{
+    //text( projectName, x, y );
+  }
+  
+  popMatrix( );
 }
 /*
 ================================================================================================================
@@ -129,7 +235,6 @@ void keyPressedOnProjectSelectionMode( ){
 }
 
 void drawOnProjectSelectionMode( ){
-  createHeaderSection( );
   if( checkMode( PROJECT_SELECTION ) ){
     //println( "Current mode is project selection." );
     createProjectTitlePane( );
@@ -142,6 +247,18 @@ void drawOnProjectSelectionMode( ){
     if( checkMode( TYPING_PROJECT_NAME ) ){
       renderProjectName( );
     }
+    
+    if( checkMode( PROJECT_NAME_ENTERED ) ){
+      //TODO: Check project from github if existing.
+      removeMode( PROJECT_SELECTION );
+      removeMode( TYPING_PROJECT_NAME );
+      removeMode( PROJECT_NAME_EMPTY );
+      removeMode( PROJECT_NAME_ENTERED );
+      removeMode( PROJECT_SELECTION_IDLE );
+
+      addMode( PROJECT_FOUND );
+      addMode( COMMAND_EMPTY );
+    }
   }
 }
 
@@ -152,7 +269,7 @@ void createProjectTitlePane( ){
   fill( 255 );
   int x = baseLeftDistance - 5;
   int y = baseTopDistance - 10;
-  int w = baseLeftDistance + 70 + 50;
+  int w = baseLeftDistance + 70 + 40;
   int h = 45;
   rect( x, y, w, h ); 
   
@@ -162,7 +279,11 @@ void createProjectTitlePane( ){
 void createSearchIcon( ){
   pushMatrix( );
   
-  image( searchIcon, 0, 0 );
+  int x = baseLeftDistance;
+  int y = baseTopDistance - 3; 
+  stroke( 0 );
+  image( searchIcon, x, y );
+  rect( x, y, 32, 32 );
   
   popMatrix( );
 }
@@ -173,7 +294,7 @@ void createProjectTitle( ){
   PFont projectTitleFont = createFont( "Verdana", 25, true );
   fill( 0 );
   textFont( projectTitleFont );
-  int x = baseLeftDistance + 50;
+  int x = baseLeftDistance + 40;
   int y = baseTopDistance + 20;
   text( "Project:", x, y );
   
@@ -185,9 +306,9 @@ void createProjectInputPane( ){
   
   stroke( 0 );
   fill( 255 );
-  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 50;
+  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 40;
   int y = baseTopDistance - 10;
-  int w = width - x + 15 - 50;
+  int w = width - x + 15 - 40;
   int h = 45;
   rect( x, y, w, h );
   
@@ -200,7 +321,7 @@ void createProjectInputPrompt( ){
   PFont projectInputPromptFont = createFont( "Verdana", 20, true );
   fill( 123 );
   textFont( projectInputPromptFont );
-  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 10 + 50;
+  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 10 + 40;
   int y = baseTopDistance + 20;
   text( "Start typing your project name.", x, y );
   
@@ -215,10 +336,10 @@ void renderProjectName( ){
   textFont( projectInputPromptFont );
   
   int projectNameWidth = (int)textWidth( projectName );
-  int projectInputPaneLeftDistance = baseLeftDistance - 5 + baseLeftDistance + 70 + 50;  
-  int boundaryWidth = width - projectInputPaneLeftDistance + 15 - 50 - 20;
+  int projectInputPaneLeftDistance = baseLeftDistance - 5 + baseLeftDistance + 70 + 40;  
+  int boundaryWidth = width - projectInputPaneLeftDistance + 15 - 40 - 20;
   
-  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 10 + 50;
+  int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 10 + 40;
   int y = baseTopDistance + 20;  
   if( projectNameWidth < boundaryWidth ){
     text( projectName, x, y );
@@ -238,7 +359,7 @@ void createHeaderSection( ){
   
   stroke( 0, 255, 26 );
   fill( 139, 255, 61 );
-  rect( 0, 0, width, 100 );
+  rect( 0, 0, width - 1, 100 );
   
   popMatrix( );
 }
