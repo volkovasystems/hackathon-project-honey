@@ -64,7 +64,7 @@ void loadImages( ){
 ================================================================================================================
 */
 void setup( ){
-  size( 1200, 800 );
+  size( 800, 600 );
   frame.setTitle( "Honey" );
   addMode( PROJECT_SELECTION );
   addMode( PROJECT_SELECTION_IDLE );
