@@ -64,7 +64,7 @@ void loadImages( ){
 ================================================================================================================
 */
 void setup( ){
-  size( 800, 600 );
+  size( 800, 500 );
   frame.setTitle( "Honey" );
   addMode( PROJECT_SELECTION );
   addMode( PROJECT_SELECTION_IDLE );
@@ -154,7 +154,7 @@ void createProjectIcon( ){
   int y = baseTopDistance - 3; 
   stroke( 0 );
   image( projectIcon, x, y );
-  rect( x, y, 32, 32 );
+  //rect( x, y, 32, 32 );
   
   popMatrix( );
 }
@@ -287,7 +287,7 @@ void createSearchIcon( ){
   int y = baseTopDistance - 3; 
   stroke( 0 );
   image( searchIcon, x, y );
-  rect( x, y, 32, 32 );
+  //rect( x, y, 32, 32 );
   
   popMatrix( );
 }
