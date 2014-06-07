@@ -1,6 +1,12 @@
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 
 int baseTopDistance = 40;
 int baseLeftDistance = 40;
@@ -8,6 +14,8 @@ int baseLeftDistance = 40;
 /*
 ================================================================================================================
 */
+final String USER_AGENT = "Mozilla/5.0";
+
 final String PROJECT_SELECTION = "project-selection";
 final String TYPING_PROJECT_NAME = "typing-project-name";
 final String PROJECT_NAME_EMPTY = "project-name-empty";
@@ -25,6 +33,11 @@ final String FEATURE_ADDED = "feature-added";
 final String FEATURE_TITLE_ENTERED = "feature-title-entered";
 final String FEATURE_DESCRIPTION_ENTERED = "feature-description-entered";
 final String FEATURE_CHECKLIST_NOT_EMPTY = "feature-checklist-not-empty";
+
+final String START_REQUEST = "start-request";
+final String END_REQUEST = "end-request";
+
+final String CREATE_FEATURE_BRANCH = "create-feature-branch";
 /*
 ================================================================================================================
 */
@@ -46,6 +59,68 @@ void removeMode( String mode ){
 boolean checkMode( String mode ){
   return appMode.contains( mode );
 }
+/*
+================================================================================================================
+*/
+
+/*
+================================================================================================================
+*/
+String sendRequest( String path, String request ){
+  removeMode( END_REQUEST );
+  addMode( START_REQUEST );
+  try{
+    String url = "http://127.0.0.1:8080/" + path + "?" + request;
+   
+    URL urlObject = new URL( url );
+    HttpURLConnection connection = ( HttpURLConnection )urlObject.openConnection( );
+   
+    // optional default is GET
+    connection.setRequestMethod( "GET" );
+   
+    //add request header
+    connection.setRequestProperty( "User-Agent", USER_AGENT );
+   
+    int responseCode = connection.getResponseCode( );
+    
+    BufferedReader inputBuffer = new BufferedReader( new InputStreamReader( connection.getInputStream( ) ) );
+    String inputLine;
+    StringBuffer response = new StringBuffer( );
+   
+    while( ( inputLine = inputBuffer.readLine( ) ) != null ){
+      response.append( inputLine );
+    }
+    inputBuffer.close( );
+    return response.toString( );
+  }catch( Exception exception ){
+    println( exception.getMessage( ) );
+    return "false";
+  }finally{
+    removeMode( START_REQUEST );
+    addMode( END_REQUEST );
+  }
+}
+
+boolean checkIfRepositoryExists( ){
+  try{
+    String encodedProjectNamespace = URLEncoder.encode( projectName, "UTF-8" );
+    return sendRequest( "repository/check/exists", "projectNamespace=" + encodedProjectNamespace ).equals( "true" );
+  }catch( Exception exception ){
+    println( exception.getMessage( ) );
+    return false;
+  }  
+}
+
+boolean createFeatureBranch( ){
+  try{
+    String encodedFeatureNamespace = URLEncoder.encode( currentFeature, "UTF-8" );
+    return sendRequest( "feature/create/branch", "featureNamespace=" + encodedFeatureNamespace ).equals( "true" );
+  }catch( Exception exception ){
+    println( exception.getMessage( ) );
+    return false;
+  }
+}
+
 /*
 ================================================================================================================
 */
@@ -113,7 +188,7 @@ void drawOnFeatureAdded( ){
     renderCurrentFeatureTitle( );
     createFeautureDescriptionTitle( );
     renderCurrentFeatureDescription( );
-    createFeatureChecklistTitle( );
+    //createFeatureChecklistTitle( );
     
   }
 }
@@ -355,6 +430,7 @@ boolean parse( ){
        }
        addMode( FEATURE_TITLE_ENTERED );
        addMode( FEATURE_ADDED );
+       addMode( CREATE_FEATURE_BRANCH );
        return true;
      }else{
        //TODO: Prompt here.
@@ -447,14 +523,19 @@ void drawOnProjectSelectionMode( ){
     
     if( checkMode( PROJECT_NAME_ENTERED ) ){
       //TODO: Check project from github if existing.
-      removeMode( PROJECT_SELECTION );
-      removeMode( TYPING_PROJECT_NAME );
-      removeMode( PROJECT_NAME_EMPTY );
       removeMode( PROJECT_NAME_ENTERED );
-      removeMode( PROJECT_SELECTION_IDLE );
-
-      addMode( PROJECT_FOUND );
-      addMode( COMMAND_EMPTY );
+      if( checkIfRepositoryExists( ) ){
+        removeMode( PROJECT_SELECTION );
+        removeMode( TYPING_PROJECT_NAME );
+        removeMode( PROJECT_NAME_EMPTY );
+        removeMode( PROJECT_SELECTION_IDLE );
+  
+        addMode( PROJECT_FOUND );
+        addMode( COMMAND_EMPTY );
+      }else{
+        addMode( PROJECT_NAME_EMPTY );
+        projectName = "";
+      }
     }
   }
 }
