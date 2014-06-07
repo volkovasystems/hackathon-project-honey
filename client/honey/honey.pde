@@ -1,4 +1,6 @@
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 int baseTopDistance = 40;
 int baseLeftDistance = 40;
@@ -18,6 +20,11 @@ final String PROJECT_CLOSE = "project-close";
 final String TYPING_COMMAND = "typing-command";
 final String COMMAND_EMPTY = "command-empty";
 final String COMMAND_ENTERED = "command-entered";
+
+final String FEATURE_ADDED = "feature-added";
+final String FEATURE_TITLE_ENTERED = "feature-title-entered";
+final String FEATURE_DESCRIPTION_ENTERED = "feature-description-entered";
+final String FEATURE_CHECKLIST_NOT_EMPTY = "feature-checklist-not-empty";
 /*
 ================================================================================================================
 */
@@ -78,6 +85,7 @@ void draw( ){
   createHeaderSection( );
   drawOnProjectSelectionMode( );
   drawOnProjectFound( );
+  drawOnFeatureAdded( );
 }
 /*
 ================================================================================================================
@@ -89,6 +97,28 @@ void draw( ){
 void keyPressed( ){
   keyPressedOnProjectSelectionMode( );
   keyPressedOnProjectFoundMode( );
+}
+/*
+================================================================================================================
+*/
+
+/*
+================================================================================================================
+*/
+void drawOnFeatureAdded( ){
+  if( checkMode( FEATURE_ADDED ) ){
+    
+  }
+}
+
+void createFeaturePane( ){
+  pushMatrix( );
+  
+  stroke( 0, 255, 26 );
+  fill( 139, 255, 61 );
+  rect( 0, 0, width - 1, 100 );
+  
+  popMatrix( );
 }
 /*
 ================================================================================================================
@@ -130,6 +160,11 @@ void drawOnProjectFound( ){
         renderCurrentCommand( );
       }
       if( checkMode( COMMAND_ENTERED ) ){
+        if( parse( ) ){
+          addMode( COMMAND_EMPTY );
+          removeMode( COMMAND_ENTERED );
+          currentCommand = "";
+        }
       }
   }
 }
@@ -207,6 +242,76 @@ void renderCurrentCommand( ){
   }
   
   popMatrix( );
+}
+/*
+================================================================================================================
+*/
+
+/*
+================================================================================================================
+*/
+//APP PARSER
+String currentFeatureTitle = "";
+String currentFeatureDescriptionTitle = "";
+LinkedList<String> currentFeatureChecklist = new LinkedList<String>( );
+boolean parse( ){
+   String addFeaturePattern = "^[Aa]dd\\s+[Ff]eature\\s+([-\\s\\w]+)";
+   String setFeatureTitlePattern = "^[Ss]et\\s+[Ff]eature(?:-|\\s+)[Tt]itle\\s+([-\\s\\w]+)";
+   String setFeatureDescriptionPattern = "^[Ss]et\\s+[Ff]eature(?:-|\\s+)[Dd]escription\\s+([-\\s\\w]+)";
+   String addFeatureChecklistPattern = "^[Aa]dd\\s+[Ff]eature(?:-|\\s+)[Cc]hecklist\\s+([-\\s\\w]+)";
+   
+   if( currentCommand.matches( addFeaturePattern ) ){
+     if( !checkMode( FEATURE_TITLE_ENTERED ) ){
+       Matcher matcher = Pattern.compile( addFeaturePattern ).matcher( currentCommand );
+       if( matcher.matches( ) ){
+         currentFeatureTitle = matcher.group( 1 );
+       }
+       addMode( FEATURE_TITLE_ENTERED );
+       return true;
+     }else{
+       //TODO: Prompt here.
+     }     
+   }
+   
+   if( currentCommand.matches( setFeatureTitlePattern ) ){
+     if( checkMode( FEATURE_TITLE_ENTERED ) ){
+       Matcher matcher = Pattern.compile( setFeatureTitlePattern ).matcher( currentCommand );
+       if( matcher.matches( ) ){
+         currentFeatureTitle = matcher.group( 1 );
+       }
+       return true;
+     }else{
+       //TODO: Prompt here.
+     }
+   }
+   
+   if( currentCommand.matches( setFeatureDescriptionPattern ) ){
+     if( checkMode( FEATURE_TITLE_ENTERED ) ){
+       Matcher matcher = Pattern.compile( setFeatureDescriptionPattern ).matcher( currentCommand );
+       if( matcher.matches( ) ){
+         currentFeatureDescriptionTitle = matcher.group( 1 );
+       }
+       addMode( FEATURE_DESCRIPTION_ENTERED );
+       return true;
+     }else{
+       //TODO: Prompt here.
+     }
+   }
+   
+   if( currentCommand.matches( addFeatureChecklistPattern ) ){
+     if( checkMode( FEATURE_TITLE_ENTERED ) ){
+       Matcher matcher = Pattern.compile( addFeatureChecklistPattern ).matcher( currentCommand );
+       if( matcher.matches( ) ){
+         currentFeatureChecklist.push( matcher.group( 1 ) );
+       }
+       addMode( FEATURE_CHECKLIST_NOT_EMPTY );
+       return true;
+     }else{
+       //TODO: Prompt here.
+     }
+   }
+   
+   return false;
 }
 /*
 ================================================================================================================
