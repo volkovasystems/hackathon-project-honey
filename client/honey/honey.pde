@@ -114,7 +114,8 @@ boolean checkIfRepositoryExists( ){
 boolean createFeatureBranch( ){
   try{
     String encodedFeatureNamespace = URLEncoder.encode( currentFeature, "UTF-8" );
-    return sendRequest( "feature/create/branch", "featureNamespace=" + encodedFeatureNamespace ).equals( "true" );
+    String encodedProjectNamespace = URLEncoder.encode( projectName, "UTF-8" );
+    return sendRequest( "feature/create/branch", "featureNamespace=" + encodedFeatureNamespace + "&projectNamespace=" + encodedProjectNamespace ).equals( "true" );
   }catch( Exception exception ){
     println( exception.getMessage( ) );
     return false;
@@ -189,7 +190,12 @@ void drawOnFeatureAdded( ){
     createFeautureDescriptionTitle( );
     renderCurrentFeatureDescription( );
     //createFeatureChecklistTitle( );
-    
+    if( checkMode( CREATE_FEATURE_BRANCH ) ){
+      removeMode( CREATE_FEATURE_BRANCH );
+      if( createFeatureBranch( ) ){
+        
+      }
+    }
   }
 }
 

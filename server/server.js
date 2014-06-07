@@ -8,7 +8,6 @@ var server = http.createServer( );
 
 server.on( "request",
 	function onRequest( request, response ){
-
 		var urlObject = url.parse( request.url, true );
 		console.log( "Request recieved!" + JSON.stringify( urlObject ) );
 		switch( urlObject.pathname ){
@@ -19,13 +18,41 @@ server.on( "request",
 						response.writeHead( 200, {
 							"Content-Type": "text/plain"
 						} );
-						console.log( gitResponse.statusCode );
 						if( gitResponse.statusCode == 302 ){
 							response.end( "true" );
 						}else{
 							response.end( "false" );
 						}
 					} );
+				break;
+
+			case "/feature/create/branch":
+				var featureNamespace = urlObject.query.featureNamespace;
+				var projectNamespace = urlObject.query.projectNamespace;
+				
+				console.log( "git clone https://github.com/" + projectNamespace + ".git && " +
+					"cd " + projectNamespace.split( "/" )[ 1 ] + " && " +
+					"git push origin origin:refs/heads/develop && " +
+					"git push origin origin:refs/heads/feature/" + featureNamespace + " && " +
+					"git push origin origin:refs/heads/feature/test" + featureNamespace );
+
+				var task = childprocess.exec( 
+					"git clone https://volkovasystems:Enigmata123@github.com/" + projectNamespace + ".git && " +
+					"cd " + projectNamespace.split( "/" )[ 1 ] + " && " +
+					"git push origin origin:refs/heads/develop && " +
+					"git push origin origin:refs/heads/feature/" + featureNamespace + " && " +
+					"git push origin origin:refs/heads/feature/test" + featureNamespace );
+
+				task.stdout.on( "data",
+					function onData( data ){
+						data += "";
+						console.log( data );
+					} )
+
+				response.writeHead( 200, {
+					"Content-Type": "text/plain"
+				} );
+				response.end( "true" );
 				break;
 
 			default: 
