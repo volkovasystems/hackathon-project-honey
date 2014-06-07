@@ -11,6 +11,7 @@ final String TYPING_PROJECT_NAME = "typing-project-name";
 final String PROJECT_NAME_EMPTY = "project-name-empty";
 final String PROJECT_NAME_ENTERED = "project-name-entered";
 final String PROJECT_SELECTION_IDLE = "project-selection-idle";
+final String PROJECT_FOUND = "project-found";
 /*
 ================================================================================================================
 */
@@ -39,17 +40,41 @@ boolean checkMode( String mode ){
 /*
 ================================================================================================================
 */
+PImage searchIcon;
+PImage projectIcon;
+PImage closeIcon;
+PImage addIcon;
+PImage doneIcon;
+PImage taskIcon;
+void loadImages( ){
+  searchIcon = loadImage( "search.png" );
+  projectIcon = loadImage( "project.png" );
+  closeIcon = loadImage( "close.png" );
+  addIcon = loadImage( "add.png" );
+  doneIcon = loadImage( "done.png" );
+  taskIcon = loadImage( "task.png" );
+}
+/*
+================================================================================================================
+*/
+
+/*
+================================================================================================================
+*/
 void setup( ){
   size( 1200, 800 );
   frame.setTitle( "Honey" );
   addMode( PROJECT_SELECTION );
   addMode( PROJECT_SELECTION_IDLE );
   addMode( PROJECT_NAME_EMPTY );
+  
+  loadImages( );
 }
 
 void draw( ){
   background( 255 );
   drawOnProjectSelectionMode( );
+  drawOnProjectFound( );
 }
 /*
 ================================================================================================================
@@ -60,6 +85,18 @@ void draw( ){
 */
 void keyPressed( ){
   keyPressedOnProjectSelectionMode( );
+}
+/*
+================================================================================================================
+*/
+
+/*
+================================================================================================================
+*/
+void drawOnProjectFound( ){
+  if( checkMode( PROJECT_FOUND ) ){
+    
+  }
 }
 /*
 ================================================================================================================
@@ -96,14 +133,14 @@ void drawOnProjectSelectionMode( ){
   if( checkMode( PROJECT_SELECTION ) ){
     //println( "Current mode is project selection." );
     createProjectTitlePane( );
-    createProjectTitleIcon( );
+    createSearchIcon( );
     createProjectTitle( );
     createProjectInputPane( );
     if( checkMode( PROJECT_NAME_EMPTY ) ){
       createProjectInputPrompt( );
     }
     if( checkMode( TYPING_PROJECT_NAME ) ){
-      
+      renderProjectName( );
     }
   }
 }
@@ -122,10 +159,10 @@ void createProjectTitlePane( ){
   popMatrix( );
 }
 
-void createProjectTitleIcon( ){
+void createSearchIcon( ){
   pushMatrix( );
   
-  
+  image( searchIcon, 0, 0 );
   
   popMatrix( );
 }
@@ -174,11 +211,21 @@ void renderProjectName( ){
   pushMatrix( );
   
   PFont projectInputPromptFont = createFont( "Verdana", 20, true );
-  fill( 123 );
+  fill( 0 );
   textFont( projectInputPromptFont );
+  
+  int projectNameWidth = (int)textWidth( projectName );
+  int projectInputPaneLeftDistance = baseLeftDistance - 5 + baseLeftDistance + 70 + 50;  
+  int boundaryWidth = width - projectInputPaneLeftDistance + 15 - 50 - 20;
+  
   int x = baseLeftDistance - 5 + baseLeftDistance + 70 + 10 + 50;
-  int y = baseTopDistance + 20;
-  text( "Start typing your project name.", x, y );
+  int y = baseTopDistance + 20;  
+  if( projectNameWidth < boundaryWidth ){
+    text( projectName, x, y );
+  }else{
+    //text( projectName, x, y );
+  }
+  
   
   popMatrix( );
 }
